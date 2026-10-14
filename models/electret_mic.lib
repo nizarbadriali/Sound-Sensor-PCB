@@ -1,0 +1,29 @@
+* Generic electret microphone - behavioural SPICE subcircuit
+*
+* NOT a vendor model. Parameters are typical-datasheet ASSUMPTIONS for a
+* 2-terminal electret capsule with an internal JFET, not values measured from
+* the MK1 part on this board. Replace them once a capsule part number is chosen.
+*
+* Pins: OUT (= MK1 pin 2, biased from VCC through R1)
+*       GND (= MK1 pin 1)
+*       SPL (= control input: 1 V on this node stands for 1 Pa of sound pressure)
+*
+* Model: JFET drain behaves as a current sink, Ibias + sensitivity * pressure,
+*        with drain-source capacitance Cout.
+*   IBIAS = 0.3 mA     typical standby current (datasheets range ~0.1-0.5 mA)
+*   GM    = 0.08 mA/Pa so that with R1 = 2.2k the output is ~ -44 dBV/Pa
+*                      (0.08 mA * 2.2k = 6.3 mV/Pa)
+*   COUT  = 10 pF
+*
+* Usage:   X_MK1 mic_node 0 spl_node ELECTRET_MIC
+*          V_SPL spl_node 0 SIN(0 0.1 1k)   ; 0.1 Pa (~74 dB SPL) at 1 kHz
+
+.SUBCKT ELECTRET_MIC OUT GND SPL PARAMS: IBIAS=0.3m GM=0.08m COUT=10p
+B1 OUT GND I = {IBIAS} + {GM} * V(SPL)
+C1 OUT GND {COUT}
+R1 SPL GND 1G
+.ENDS ELECTRET_MIC
+
+* LM393: download the manufacturer model (e.g. TI LM393 PSpice/TINA model)
+* into this folder and .include it alongside this file. It is not bundled
+* here because vendor models carry their own licence terms.
